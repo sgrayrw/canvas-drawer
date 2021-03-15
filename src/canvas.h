@@ -5,44 +5,47 @@
 #include <vector>
 #include "ppm_image.h"
 
-namespace agl
-{
-   enum PrimitiveType {UNDEFINED, LINES, TRIANGLES};
-   class canvas
-   {
-   public:
-      canvas(int w, int h);
-      virtual ~canvas();
+namespace agl {
+    enum PrimitiveType {
+        UNDEFINED, LINES, TRIANGLES
+    };
 
-      // Save to file
-      void save(const std::string& filename);
+    class canvas {
+    public:
+        canvas(int w, int h);
 
-      // Draw primitives with a given type (either LINES or TRIANGLES)
-      // For example, the following draws a red line followed by a green line
-      // begin(LINES);
-      //    color(255,0,0);
-      //    vertex(0,0);
-      //    vertex(100,0);
-      //    color(0,255,0);
-      //    vertex(0, 0);
-      //    vertex(0,100);
-      // end();
-      void begin(PrimitiveType type);
-      void end();
+        virtual ~canvas();
 
-      // Specifiy a vertex at raster position (x,y)
-      // x corresponds to the column; y to the row
-      void vertex(int x, int y);
+        // Save to file
+        void save(const std::string &filename);
 
-      // Specify a color. Color components are in range [0,255]
-      void color(unsigned char r, unsigned char g, unsigned char b);
+        // Draw primitives with a given type (either LINES or TRIANGLES)
+        // For example, the following draws a red line followed by a green line
+        // begin(LINES);
+        //    color(255,0,0);
+        //    vertex(0,0);
+        //    vertex(100,0);
+        //    color(0,255,0);
+        //    vertex(0, 0);
+        //    vertex(0,100);
+        // end();
+        void begin(PrimitiveType type);
 
-      // Fill the canvas with the given background color
-      void background(unsigned char r, unsigned char g, unsigned char b);
+        void end();
 
-   private:
-      ppm_image _canvas;
-   };
+        // Specifiy a vertex at raster position (x,y)
+        // x corresponds to the column; y to the row
+        void vertex(int x, int y);
+
+        // Specify a color. Color components are in range [0,255]
+        void color(unsigned char r, unsigned char g, unsigned char b);
+
+        // Fill the canvas with the given background color
+        void background(unsigned char r, unsigned char g, unsigned char b);
+
+    private:
+        ppm_image _canvas;
+    };
 }
 
 #endif
