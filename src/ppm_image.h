@@ -10,6 +10,9 @@ namespace agl {
         unsigned char r;
         unsigned char g;
         unsigned char b;
+
+        ppm_pixel operator+(const ppm_pixel& other) const;
+        ppm_pixel operator*(float scale) const;
     };
 
     class ppm_image {

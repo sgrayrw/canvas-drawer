@@ -49,3 +49,17 @@ void ppm_image::set(int row, int col, const ppm_pixel &color) {
     assert(col >= 0 && col < myWidth);
     myData[row * myWidth + col] = color;
 }
+
+ppm_pixel ppm_pixel::operator+(const ppm_pixel &other) const {
+    int newr = min((int) r + (int) other.r, 255);
+    int newg = min((int) g + (int) other.g, 255);
+    int newb = min((int) b + (int) other.b, 255);
+    return {(unsigned char) newr, (unsigned char) newg, (unsigned char) newb};
+}
+
+ppm_pixel ppm_pixel::operator*(float scale) const {
+    int newr = min((int) r * scale, 255.0f);
+    int newg = min((int) g * scale, 255.0f);
+    int newb = min((int) b * scale, 255.0f);
+    return {(unsigned char) newr, (unsigned char) newg, (unsigned char) newb};
+}

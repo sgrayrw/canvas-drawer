@@ -5,9 +5,17 @@
 #include <vector>
 #include "ppm_image.h"
 
+using namespace std;
+
 namespace agl {
     enum PrimitiveType {
         UNDEFINED, LINES, TRIANGLES
+    };
+
+    struct point {
+        int x;
+        int y;
+        ppm_pixel color;
     };
 
     class canvas {
@@ -45,6 +53,21 @@ namespace agl {
 
     private:
         ppm_image _canvas;
+        ppm_pixel curr_color = {0, 0, 0};
+        ppm_pixel curr_background = {0, 0, 0};
+        PrimitiveType curr_type = UNDEFINED;
+        vector<point> curr_points;
+
+        static ppm_pixel linear_interpolate(const ppm_pixel &c1, const ppm_pixel &c2, float t);
+
+        void draw_line(const point& start, const point& end);
+        void draw_line_vertical(int ax, int ay, int bx, int by, const ppm_pixel &cx, const ppm_pixel &cy);
+        void draw_line_horizontal(int ax, int ay, int bx, int by, const ppm_pixel &cx, const ppm_pixel &cy);
+        void draw_line_flat(int ax, int ay, int bx, int by, const ppm_pixel& cx, const ppm_pixel& cy);
+        void draw_line_steep(int ax, int ay, int bx, int by, const ppm_pixel& cx, const ppm_pixel& cy);
+
+        void draw_triangle(const point &a, const point &b, const point &c);
+        static int line_distance(const point &start, const point &end, const point &p);
     };
 }
 
