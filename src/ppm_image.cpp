@@ -44,10 +44,15 @@ ppm_pixel ppm_image::get(int row, int col) const {
     return myData[row * myWidth + col];
 }
 
-void ppm_image::set(int row, int col, const ppm_pixel &color) {
-    assert(row >= 0 && row < myHeight);
-    assert(col >= 0 && col < myWidth);
-    myData[row * myWidth + col] = color;
+void ppm_image::set(int row, int col, const ppm_pixel &color, float prob) {
+    if ((float) rand() / RAND_MAX > prob) {
+        return;
+    }
+
+    // ignore when row and col out of bounds
+    if (row >= 0 && row < myHeight && col >= 0 && col < myWidth) {
+        myData[row * myWidth + col] = color;
+    }
 }
 
 ppm_pixel ppm_pixel::operator+(const ppm_pixel &other) const {

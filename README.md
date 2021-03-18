@@ -44,9 +44,33 @@ canvas-drawer/build $ ../bin/draw_art
 ```
 
 ## Supported primitives
+```c++
+// draw a circle with given center (x, y) and radius
+void draw_circle(int x, int y, int radius);
+```
+![](fig/circle.png)
 
-TODO: Document the custom primitives supported by your canvas class
+```c++
+// draw a rectangel with given center (x, y), width, and height
+void draw_rectangle(int x, int y, int width, int height);
+```
+![](fig/rectangle.png)
 
-## Results
+```c++
+// set the width of shape borders
+void set_width(int width);
+```
+![](fig/width_10.png)
 
-TODO: Show artworks using your class
+```c++
+// Resemble dotted lines by randomly missing some pixels, and expect
+// to only draw *ratio* amount of pixels in total
+void dotted(float ratio);
+```
+![](fig/dotted.png)
+
+## Result
+
+*The Deathly Hallows* from *Harry Potter*
+
+![](fig/deathly-hallows.png)

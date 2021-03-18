@@ -1,5 +1,6 @@
 #include "canvas.h"
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 using namespace agl;
@@ -14,8 +15,7 @@ canvas::~canvas() = default;
 void canvas::save(const std::string &filename) {
     _canvas.save(filename);
 
-    // clear the canvas and vertices
-    curr_points.clear();
+    // clear the canvas
     background(curr_background.r, curr_background.g, curr_background.b);
 }
 
@@ -30,8 +30,14 @@ void canvas::end() {
             if (curr_points.size() % 2 != 0) {
                 cout << "warn: odd number of vertices, the last vertex will be ignored" << endl;
             }
-            for (int i = 0; i < curr_points.size() - 1; ++i) {
-                draw_line(curr_points[i], curr_points[i + 1]);
+            for (int i = 0; i < curr_points.size() - 1; i += 2) {
+                for (int j = 0; j < curr_width; ++j) {
+                    for (int k = 0; k < 2; ++k) {
+                        curr_points[i + k].x++;
+                        curr_points[i + k].y++;
+                    }
+                    draw_line(curr_points[i], curr_points[i + 1]);
+                }
             }
             break;
         case TRIANGLES:
@@ -39,19 +45,24 @@ void canvas::end() {
             if (curr_points.size() % 3 != 0) {
                 cout << "warn: number of vertices is not multiple of 3" << endl;
             }
-            for (int i = 0; i < curr_points.size() - 2; ++i) {
-                draw_triangle(curr_points[i], curr_points[i + 1], curr_points[i + 2]);
+            for (int i = 0; i < curr_points.size() - 2; i += 3) {
+                for (int j = 0; j < curr_width; ++j) {
+                    for (int k = 0; k < 3; ++k) {
+                        curr_points[i + k].x++;
+                        curr_points[i + k].y++;
+                    }
+                    draw_triangle(curr_points[i], curr_points[i + 1], curr_points[i + 2]);
+                }
             }
             break;
         case UNDEFINED:
             break;
     }
+    curr_points.clear();
 }
 
 void canvas::vertex(int x, int y) {
     assert(curr_type != UNDEFINED);
-    x = min(max(x, 0), _canvas.width() - 1);
-    y = min(max(y, 0), _canvas.height() - 1);
     curr_points.push_back({x, y, curr_color});
 }
 
@@ -64,7 +75,7 @@ void canvas::background(unsigned char r, unsigned char g, unsigned char b) {
 
     for (int i = 0; i < _canvas.height(); ++i) {
         for (int j = 0; j < _canvas.width(); ++j) {
-            _canvas.set(i, j, {r, g, b});
+            _canvas.set(i, j, {r, g, b}, 1);
         }
     }
 }
@@ -102,7 +113,7 @@ void canvas::draw_line_vertical(int ax, int ay, int bx, int by, const ppm_pixel&
     for (int y = miny; y <= maxy; ++y) {
         float t = ((float) y - miny) / (maxy - miny);
         ppm_pixel c = linear_interpolate(cx, cy, t);
-        _canvas.set(y, ax, c);
+        _canvas.set(y, ax, c, curr_ratio);
     }
 }
 
@@ -114,7 +125,7 @@ void canvas::draw_line_horizontal(int ax, int ay, int bx, int by, const ppm_pixe
     for (int x = minx; x <= maxx; ++x) {
         float t = ((float) x - minx) / (maxx - minx);
         ppm_pixel c = linear_interpolate(cx, cy, t);
-        _canvas.set(ay, x, c);
+        _canvas.set(ay, x, c, curr_ratio);
     }
 }
 
@@ -133,7 +144,7 @@ void canvas::draw_line_flat(int ax, int ay, int bx, int by, const ppm_pixel& cx,
     for (int x = ax; x <= bx; ++x) {
         float t = ((float) x - ax) / (bx - ax);
         ppm_pixel c = linear_interpolate(cx, cy, t);
-        _canvas.set(y, x, c);
+        _canvas.set(y, x, c, curr_ratio);
         if (F > 0) {
             y += inc;
             F += 2 * (H - W);
@@ -158,7 +169,7 @@ void canvas::draw_line_steep(int ax, int ay, int bx, int by, const ppm_pixel& cx
     for (int y = ay; y <= by; ++y) {
         float t = ((float) y - ay) / (by - ay);
         ppm_pixel c = linear_interpolate(cx, cy, t);
-        _canvas.set(y, x, c);
+        _canvas.set(y, x, curr_color, curr_ratio);
         if (F > 0) {
             x += inc;
             F += 2 * (W - H);
@@ -178,7 +189,7 @@ void canvas::draw_triangle(const point &a, const point &b, const point &c) {
     int f_beta = line_distance(a, c, b);
     int f_gamma = line_distance(a, b, c);
 
-    point hidden = {-1, -1, ppm_pixel()};
+    point hidden = {-2, -1, ppm_pixel()};
 
     for (int y = ymin; y <= ymax; ++y) {
         for (int x = xmin; x <= xmax; ++x) {
@@ -188,10 +199,11 @@ void canvas::draw_triangle(const point &a, const point &b, const point &c) {
             float gamma = (float) line_distance(a, b, p) / f_gamma;
             if (alpha >= 0 && beta >= 0 && gamma >= 0) {
                 ppm_pixel color = a.color * alpha + b.color * beta + c.color * gamma;
-                if (alpha > 0 || f_alpha * line_distance(b, c, hidden) > 0 ||
-                        beta > 0 || f_beta * line_distance(a, c, hidden) > 0 ||
-                        gamma > 0 || f_gamma * line_distance(a, b, hidden) > 0) {
-                    _canvas.set(y, x, color);
+                bool draw_alpha = (alpha > 0 || f_alpha * line_distance(b, c, hidden) > 0);
+                bool draw_beta = (beta > 0 || f_beta * line_distance(a, c, hidden) > 0);
+                bool draw_gamma = (gamma > 0 || f_gamma * line_distance(a, b, hidden) > 0);
+                if (draw_alpha && draw_beta && draw_gamma) {
+                    _canvas.set(y, x, color, curr_ratio);
                 }
             }
         }
@@ -210,4 +222,54 @@ int canvas::line_distance(const point &start, const point &end, const point &p) 
     return H * (p.x - ax) - W * (p.y - ay);
 }
 
+void canvas::draw_circle(int x, int y, int radius) {
+    for (int i = 0; i < curr_width; ++i) {
+        draw_circle_internal(x, y, radius + i);
+    }
+}
 
+void canvas::draw_circle_internal(int x, int y, int radius) {
+    int num_slices = 512;
+    float d_theta = 2 * M_PI / num_slices;
+    for (int i = 0; i < num_slices; ++i) {
+        float theta1 = i * d_theta;
+        float theta2 = (i + 1) * d_theta;
+        point p1 = {
+                static_cast<int>(radius * cos(theta1)) + x,
+                static_cast<int>(radius * sin(theta1)) + y,
+                curr_color
+        };
+        point p2 = {
+                static_cast<int>(radius * cos(theta2)) + x,
+                static_cast<int>(radius * sin(theta2)) + y,
+                curr_color
+        };
+        draw_line(p1, p2);
+    }
+}
+
+void canvas::set_width(int width) {
+    assert(width > 1);
+    curr_width = width;
+}
+
+void canvas::draw_rectangle(int x, int y, int width, int height) {
+    for (int i = 0; i < curr_width; ++i) {
+        draw_rectangle_internal(x, y, width + i * 2, height + i * 2);
+    }
+}
+
+void canvas::draw_rectangle_internal(int x, int y, int width, int height) {
+    point p1 = {x - width / 2, y - height / 2, curr_color};
+    point p2 = {x + width / 2, y - height / 2, curr_color};
+    point p3 = {x + width / 2, y + height / 2, curr_color};
+    point p4 = {x - width / 2, y + height / 2, curr_color};
+    draw_line(p1, p2);
+    draw_line(p2, p3);
+    draw_line(p3, p4);
+    draw_line(p4, p1);
+}
+
+void canvas::dotted(float ratio) {
+    this->curr_ratio = ratio;
+}

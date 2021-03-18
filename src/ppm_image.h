@@ -41,7 +41,7 @@ namespace agl {
         ppm_pixel get(int row, int col) const;
 
         // Get the pixel at index (row, col)
-        void set(int row, int col, const ppm_pixel &color);
+        void set(int row, int col, const ppm_pixel &color, float prob);
 
     private:
         ppm_pixel *myData;

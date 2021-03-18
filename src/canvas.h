@@ -1,5 +1,4 @@
-#ifndef canvas_H_
-#define canvas_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -51,12 +50,29 @@ namespace agl {
         // Fill the canvas with the given background color
         void background(unsigned char r, unsigned char g, unsigned char b);
 
+        //******************* additional features below *******************
+
+        // draw a circle with given center (x, y) and radius
+        void draw_circle(int x, int y, int radius);
+
+        // draw a rectangel with given center (x, y), width, and height
+        void draw_rectangle(int x, int y, int width, int height);
+
+        // set the width of shape borders
+        void set_width(int width);
+
+        // Resemble dotted lines by randomly missing some pixels, and expect
+        // to only draw *ratio* amount of pixels in total
+        void dotted(float ratio);
+
     private:
         ppm_image _canvas;
         ppm_pixel curr_color = {0, 0, 0};
         ppm_pixel curr_background = {0, 0, 0};
         PrimitiveType curr_type = UNDEFINED;
         vector<point> curr_points;
+        int curr_width = 1;
+        float curr_ratio = 1;
 
         static ppm_pixel linear_interpolate(const ppm_pixel &c1, const ppm_pixel &c2, float t);
 
@@ -68,9 +84,8 @@ namespace agl {
 
         void draw_triangle(const point &a, const point &b, const point &c);
         static int line_distance(const point &start, const point &end, const point &p);
+
+        void draw_circle_internal(int x, int y, int radius);
+        void draw_rectangle_internal(int x, int y, int width, int height);
     };
 }
-
-#endif
-
-
